@@ -3,7 +3,6 @@
         //   MAX: оптимум когато всички Cj-Zj <= 0
         //   MIN: оптимум когато всички Cj-Zj >= 0
 var dataLHS = [[]];  // коефициентни редове от потребителския вход
-var NOSOLUTION = false;
 let SOLVABLE = false;  // дали задачата има допустимо решение
 let SOLVED = false;    // дали алгоритъмът е завършил
 
@@ -76,6 +75,11 @@ function checkSigns(table){
 // Основна функция: изгражда начална симплекс таблица и итерира до оптималност или недопустимост.
 function startSimplex(){
 
+    // Изчиства резултатите от предишно стартиране
+    document.getElementById('simplexTable').innerHTML = '';
+    SOLVED = false;
+    SOLVABLE = false;
+
     let mainTable = checkSigns(makeCanonical());
     // Конвертира всички стойности към числа, тъй като extractNumbers връща стрингове.
     for(let i=0;i<mainTable.length;i++)
@@ -90,6 +94,7 @@ function startSimplex(){
     let Z = [];
     let zj = [];
     let Cj_Zj = [];
+    let ZValue = 0;
     
 
     let Bj = (()=>{
@@ -361,34 +366,39 @@ function startSimplex(){
     }
     
     slackArray = loadSlacks();
-    zj = calculateZj()
+    zj = calculateZj();
     ZValue = calculateZ();
     Cj_Zj = calculateCj_Zj();
     createSTable();
-    printSimplexTable(simplexTable,0);
-    
+    printSimplexTable(simplexTable, 0);
+
+    // Максимален брой итерации предпазва от безкраен цикъл при дегенерирани задачи.
+    const MAX_ITERATIONS = 100;
     let stepcounter = 0;
-    while(leadInABV()!=undefined){
+    while(leadInABV() != undefined && stepcounter < MAX_ITERATIONS){
         zj = [];
         ZValue = 0;
         Cj_Zj = [];
-        stepcounter++
-        zj = calculateZj()
+        stepcounter++;
+        zj = calculateZj();
         ZValue = calculateZ();
         Cj_Zj = calculateCj_Zj();
         createSTable();
-        printSimplexTable(simplexTable,stepcounter);
+        printSimplexTable(simplexTable, stepcounter);
     }
 
-    if(selectBVColumn() == undefined){
+    if(stepcounter >= MAX_ITERATIONS){
         SOLVED = true;
-        SOLVABLE = true
-    }
-    else{
+        SOLVABLE = false;
+        console.warn('Достигнат максимален брой итерации — възможен cycling.');
+    } else if(selectBVColumn() == undefined){
+        SOLVED = true;
+        SOLVABLE = true;
+    } else {
         SOLVED = true;
         SOLVABLE = false;
     }
-    printSimplexTable(simplexTable,-1);
+    printSimplexTable(simplexTable, -1);
 
 
 }
@@ -447,31 +457,28 @@ function printSimplexTable(table,stage){
     body.appendChild(space);
     body.appendChild(tbl)
 }
-//извеждане на каноничната форма на заданието
-function printCanonical(textT,lastX){
+// Извежда каноничната форма на заданието в страницата.
+function printCanonical(textT, lastX){
     let cantext = document.getElementById("canonical");
     let result = document.getElementsByName('result');
     let targetF = document.getElementsByName("targetf");
     let term;
+    let lineFeed;
     let text = textT;
-    let lastXrow = text[text.length-1];
-    //lastX = lastXrow[lastXrow.length -1]
     cantext.style.color = "yellow";
     cantext.textContent = "Канонична форма:";
     if(targetF[0] != undefined){
-        text[0] = 'Да се намери (' + targetF[0].value + ') : ' + 
+        text[0] = 'Да се намери (' + targetF[0].value + ') : ' +
                     text[0] + ' . При условия:';
     }
 
-    if(textT.length>=2)
+    if(textT.length >= 2)
         for(let i=1;i<text.length;i++){
             text[i] += " = ";
             text[i] += result[i-1].value;
-            //console.log(text[i]);
         }
-    
+
     for(let i=0;i<text.length;i++){
-        //console.log(text);
         lineFeed = document.createElement("br");
         cantext.appendChild(lineFeed);
         term = document.createTextNode(text[i]);
@@ -612,22 +619,25 @@ function validateLHS(inputdata){
         if(inputdata[i] == '+' || inputdata[i] == '-'){
             if(i>0 && i<inputdata.length - 1){
                 if(inputdata[i-1] != ' ' || inputdata[i+1] != ' '){
-                    alert("Некоректен знаков формат");
+                    alert("Некоректен знаков формат — знакът трябва да е ограден с интервали: напр. '3x1 + 2x2'");
                     return false;
                 }
             }
         }
         if(inputdata[i] == 'x'){
-            if(i<inputdata.length - 1){
+            // цифра непосредствено преди 'x' означава слети членове като "x1x2"
+            if(i > 0 && /\d/.test(inputdata[i-1])){
+                alert("Некоректен формат — липсва оператор между членовете: напр. 'x1 + x2'");
+                return false;
+            }
+            if(i < inputdata.length - 1){
                 if(inputdata[i+1] == ' '){
-                    alert("Некоректен индекс формат");
+                    alert("Некоректен индекс формат — индексът трябва да следва директно: напр. 'x1'");
                     return false;
                 }
-                if(inputdata[i-1] == ' ' && inputdata[i-2] != '-' && i > 1){
-                    if(inputdata[i-1] == ' ' && inputdata[i-2] != '+' && i > 1){
-                        alert("Некоректен коефициент формат");
-                        return false;
-                    }
+                if(i > 1 && inputdata[i-1] == ' ' && inputdata[i-2] != '-' && inputdata[i-2] != '+'){
+                    alert("Некоректен коефициент формат — напр. '3x1', не '3 x1'");
+                    return false;
                 }
             }
         }
@@ -710,23 +720,4 @@ function addZeroes(table){
             }      
         }
     }
-}
-function transponeMatrix(matrix){
-    let TM = [[]];
-    for(let mci=0;mci<matrix[0].length;mci++)
-        for(let mri=0;mri<matrix.length;mri++)
-            TM[mci][mri] = matrix[mri][mci]
-    return TM;
-}
-function multiplyTargetRow(table,row,value){
-    let resultRow = [];
-    for(let i=0;i<table[0].length;i++)
-        resultRow[i] = (table[row][i]*value).toFixed(2);
-    return resultRow;
-}
-function addTableRows(table,targetRow,BVrow){
-    for(let i=0;i<table[0].length;i++){
-        table[targetRow][i] = Number(table[targetRow][i]) + Number(BVrow[i]);
-    }
-    return table;
 }

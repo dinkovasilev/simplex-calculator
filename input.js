@@ -92,13 +92,3 @@ function addItem(tindex){
     //getLPPData();
 }
 
-// НЕЗАВЪРШЕНО: планирана алтернатива на getRowData; логиката е преместена в getdata.js.
-function getLPPData(){
-    var BV = [];  // basic variables
-    var Z = [];   // objective function coefficients
-    var C = [[]]; // constraints
-    var RHS = [];
-
-    Z[0] = document.getElementsByName("index0").text;
-    alert(Z[0]);
-}
