@@ -1,0 +1,62 @@
+<!DOCTYPE HTML> 
+<html> 
+
+<head> 
+	<title> 
+		 Скелет
+	</title> 
+	<link rel="stylesheet" href="./style.css">
+</head> 
+
+<body style="background-color: #3A8F57FF;"> 
+	<h1 style="text-align:center; color:rgb(221, 235, 32);"> 
+		Задание за оптимиране:
+	</h1> 
+	
+ 
+	<p id="index" style="visibility: hidden;">0</p>
+	<p id="error" style="visibility: hidden;">0</p>	
+	<!-- Form to add item -->
+	<form action="#"> <!--style="text-align:center;"--> 
+
+		<!-- Submit the Form -->
+		<button type="button"
+			onClick="addItem()"> 
+			ДОБАВЯНЕ НА УСЛОВИЯ
+        </button> 
+        
+    </form> 
+	
+	<div id="rawdata">
+		<p>Моля използвайте формат от типа: <br>
+		+/- Ax1 +/- Bx2 +/- ... +/- KxN</p>
+	</div>
+	<br>
+
+	<div id="run">
+		<button type="button"
+			onClick="startSimplex()"> 
+			СЪЗДАВАНЕ НА ТАБЛИЦАТА
+		</button> 
+		<p id="canonical">Резултат:</p>
+	</div>
+
+	
+	
+	<div id="tabledata">
+		<p>Коефициенти на уравненията</p>
+	</div>
+	
+	<div id="simplexTable">
+		<p>Първична симплекс таблица</p>
+	</div>
+
+	<script type="text/javascript" src="./input.js"></script> 
+	<script type="text/javascript" src="./getdata.js"></script> 
+	<!--script type="text/javascript" src="./table.js"></script--> 
+</body> 
+
+</html> 
+
+
+

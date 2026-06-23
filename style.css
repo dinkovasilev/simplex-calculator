@@ -1,0 +1,29 @@
+div{
+    align-items: center;
+    
+    text-align: center;
+        
+    align-content: center;
+}
+
+
+p{
+    
+    position: relative;
+    margin-left: 33%;
+    margin-right: auto;
+    text-align: left;
+
+}
+
+
+form{
+    align-items: center;
+    text-align: center;
+}
+
+table{
+    margin-left: 33%;
+    margin-right: auto;
+    background-color: bisque;
+}
